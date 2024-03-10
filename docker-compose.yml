@@ -1,0 +1,40 @@
+version: "3" # 表示该 Docker-Compose 文件使用的版本为3
+services:
+    wordpress:
+        image: wordpress
+        container_name: wordpress
+        depends_on:
+            - mysql
+        environment:
+            - "WORDPRESS_DB_HOST=mysql"
+            - "WORDPRESS_DB_NAME=${MYSQL_DATABASE:-wpdb}"
+            - "WORDPRESS_DB_USER=${MYSQL_USER:-wpdbuser}"
+            - "WORDPRESS_DB_PASSWORD=${MYSQL_PASSWORD:-12345abc}"
+        volumes:
+            - wpfiles:/var/www/html
+            - ./wp-content:/var/www/html/wp-content
+        ports:
+            - "30010:80"
+        networks:
+            - wpnet
+        restart: on-failure
+    mysql:
+        image: mysql:8
+        container_name: mysql
+        environment:
+            - "MYSQL_USER=${MYSQL_USER:-wpdbuser}"
+            - "MYSQL_DATABASE=${MYSQL_DATABASE:-wpdb}"
+            - "MYSQL_PASSWORD=${MYSQL_PASSWORD:-12345abc}"
+            - "MYSQL_RANDOM_ROOT_PASSWORD=yes"
+        volumes:
+            - wpdata:/var/lib/mysql
+        ports:
+            - "30011:3306"
+        networks:
+            - wpnet
+        restart: on-failure
+volumes:
+    wpdata:
+    wpfiles:
+networks:
+    wpnet:
